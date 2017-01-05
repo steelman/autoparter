@@ -1,0 +1,15 @@
+Source: autoparter
+Section: debian-installer
+Priority: optional
+Maintainer: Łukasz Stelmach <stlman@poczta.fm>
+
+Package: autoparter
+Architecture: amd64
+XC-Package-Type: udeb
+Depends: ${shlibs:Depends}, ${misc:Depends}
+XB-Installer-Menu-Item: 4100
+Description: Prepare hard drive for installation
+ This is a module that prepares the hard drive for the installation
+ the "inflexible" way. Unlike partman it does not try to be robust and
+ versatile but rather to precisely follow orders or just give up.
+ 
