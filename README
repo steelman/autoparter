@@ -1,0 +1,4 @@
+Autoparter is a non-interactive and much less flexible than partman,
+programme for partitioning hard drive during Debian installation. It is
+designed to precisely follow users' instructions to create reproducible
+partition layouts during preseeded installations.
