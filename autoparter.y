@@ -1,5 +1,6 @@
 %{
 #include <stdio.h>
+#define YYSTYPE char const *
 %}
 
 %token KEYWORD WORD
@@ -8,15 +9,30 @@
 
 %%
 
-rules: rules rule | rule
-rule:KEYWORD WORD ':' words
-words: words WORD | WORD
+rules:          rule
+                | rules rule
+
+rule:           KEYWORD WORD parameters ':' prerequisits
+
+prerequisits:   %empty
+                | words
+
+parameters:     parameter
+                | parameters parameter
+
+words:          WORD
+                | words WORD
+
+
+parameter:      WORD '=' WORD
 
 %%
+
 extern FILE* yyin;
 
 main()
 {
+  yydebug=1;
 	do {
 		yyparse();
 		printf("-----\n");
