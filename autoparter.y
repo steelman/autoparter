@@ -1,11 +1,13 @@
 %{
 #include <stdio.h>
-#define YYSTYPE char const *
 %}
 
 %token KEYWORD WORD
 %defines
 %define lr.type ielr
+%define api.value.type {const char*}
+
+%printer { fprintf(yyoutput, "%s", $$); } WORD KEYWORD
 
 %%
 
@@ -24,7 +26,7 @@ words:          WORD
                 | words WORD
 
 
-parameter:      WORD '=' WORD
+parameter:      WORD '=' WORD { fprintf(stderr, "P:%s\n", );}
 
 %%
 
@@ -32,7 +34,9 @@ extern FILE* yyin;
 
 main()
 {
+#if YYDEBUG
   yydebug=1;
+#endif
 	do {
 		yyparse();
 		printf("-----\n");
