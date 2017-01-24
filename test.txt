@@ -1,3 +1,3 @@
 device sda path=/dev/sda :
 
-label sdaLab type=gpt : sda
+label sdaLab type=gpt foo=bar: sda

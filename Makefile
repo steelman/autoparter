@@ -7,8 +7,8 @@ autoparter.tab.c: autoparter.y
 autoparter.tab.h: autoparter.y
 	bison autoparter.y
 
-autoparter.yy.o: autoparter.yy.c autoparter.tab.h
-autoparter.tab.o: autoparter.tab.c
+autoparter.yy.o: autoparter.yy.c autoparter.tab.h autoparter.h
+autoparter.tab.o: autoparter.tab.c autoparter.h
 
 autoparter: autoparter.tab.o autoparter.yy.o
 	$(CC) $(LDFLAGS) $^ -o $@

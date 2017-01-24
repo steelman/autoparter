@@ -1,4 +1,6 @@
+/* -*- mode: c -*- */
 %{
+#include "autoparter.h"
 #include "autoparter.tab.h"
 #if 0
 #define _DEBUG(f...) fprintf(stderr, f)
@@ -17,9 +19,9 @@
 ^label      |
 ^partition  |
 ^filesystem |
-^mount          { _DEBUG("KEYWORD: %s\n", yytext); yylval = yytext; return KEYWORD; }
-[A-Za-z_/]+     { _DEBUG("WORD: %s\n", yytext); yylval = yytext; return WORD;    }
-=|:             { _DEBUG("%c", yytext[0]); return yytext[0]; }
+^mount          { yylval.word = malloc(sizeof(struct word)); yylval.word->w = strdup(yytext); return KEYWORD; }
+[A-Za-z_/]+     { yylval.word = malloc(sizeof(struct word)); yylval.word->w = strdup(yytext); return WORD;    }
+=|:             { return yytext[0]; }
 .|\n            ;
 
 %%
