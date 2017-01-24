@@ -1,7 +1,7 @@
 /* -*- mode: c -*- */
 %{
 #include "autoparter.h"
-#include "autoparter.tab.h"
+#include "parser.h"
 #if 0
 #define _DEBUG(f...) fprintf(stderr, f)
 #else

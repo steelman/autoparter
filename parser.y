@@ -101,17 +101,6 @@ parameter:      WORD '=' WORD {
 
 extern FILE* yyin;
 
-main()
-{
-#if YYDEBUG
-  yydebug=1;
-#endif
-	do {
-		yyparse();
-		printf("-----\n");
-	} while (!feof(yyin));
-}
-
 yyerror (char const *s)
 {
 	fprintf (stderr, "%s\n", s);

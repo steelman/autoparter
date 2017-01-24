@@ -1,17 +1,26 @@
-autoparter.yy.c: autoparter.l
-	flex autoparter.l
+LEX = flex
+LFLAGS = -I
+YACC = bison
+YFLAGS = -d -o y.tab.c
 
-autoparter.tab.c: autoparter.y
-	bison autoparter.y
+SOURCES = autoparter.c \
+	scanner.c \
+	parser.c
 
-autoparter.tab.h: autoparter.y
-	bison autoparter.y
+include $(sources:.c=.d)
 
-autoparter.yy.o: autoparter.yy.c autoparter.tab.h autoparter.h
-autoparter.tab.o: autoparter.tab.c autoparter.h
+.PRECIOUS: parser.c scanner.c
 
-autoparter: autoparter.tab.o autoparter.yy.o
-	$(CC) $(LDFLAGS) $^ -o $@
+%.h: %.y %.c
+	mv y.tab.h $@ || true
+
+scanner.o: parser.h
+
+%.d: %.c
+	$(CC) -M $(CPPFLAGS) $< > $@
+
+autoparter: scanner.o parser.o autoparter.o
 
 clean:
-	rm -f *.o *.yy.c *.tab.[hc]
+	rm -f $(SOURCES:.c=.d)
+	rm -f *.o *.yy.c *.tab.[hc] *.d
