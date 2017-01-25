@@ -21,6 +21,14 @@
 ^filesystem |
 ^mount          { yylval.word = malloc(sizeof(struct word)); yylval.word->w = strdup(yytext); return KEYWORD; }
 [A-Za-z_/]+     { yylval.word = malloc(sizeof(struct word)); yylval.word->w = strdup(yytext); return WORD;    }
+\"[^\"\n]*[\"\n] {
+    if (yytext[yyleng-1] != '"')
+        return ERROR;
+    yytext[yyleng-1] = '\0';
+    yylval.word = malloc(sizeof(struct word));
+    yylval.word->w = strdup(yytext+1);
+    return WORD;
+}
 =|:             { return yytext[0]; }
 .|\n            ;
 

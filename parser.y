@@ -38,6 +38,7 @@
     struct rule *rule;
 }
 
+%token ERROR
 %token <word> KEYWORD WORD
 %type <param> parameter parameters
 %type <word> words prerequisites
