@@ -47,3 +47,11 @@ struct rule
     const struct word *prerequisites;
     const struct rule *next;
 };
+
+const char *getrulename (enum rule_type);
+enum rule_type getruletype (const char *);
+int device_check_rule (const struct rule*);
+int label_check_rule (const struct rule*);
+int partition_check_rule (const struct rule*);
+int fs_check_rule (const struct rule*);
+int mount_check_rule (const struct rule*);

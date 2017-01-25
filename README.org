@@ -58,7 +58,7 @@ mount rootMnt target=/ : rootFs
    prerequisites = "" | prerequisites, WORD
 
    KEYWORD = "device" | "label" | "partition" | "filesystem" | "mount"
-   WORD    = LETTER, {LETTER | DIGIT | SPECIAL CHARACTER}
+   WORD    = LETTER | DIGIT | SPECIAL CHARACTER, {LETTER | DIGIT | SPECIAL CHARACTER}
    LETTER  = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" |
              "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" |
              "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" | "a" |

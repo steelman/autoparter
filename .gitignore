@@ -1,2 +1,6 @@
 /autoparter
 /autoparter.output
+/parser.[hc]
+/scanner.c
+*.d
+*.o

@@ -3,33 +3,6 @@
 #include "autoparter.h"
 #include <stdio.h>
 #include <stdlib.h>
-
-    static const char *rule_types[] = {
-        [DEVICE] = "device",
-        [LABEL] = "label",
-        [PARTITION] = "partition",
-        [FILESYSTEM] = "filesystem",
-        [MOUNT] = "mount",
-        [UNKNOWN_RULE] = "UNKNOWN",
-    };
-
-    static const char* getrulename(enum rule_type t) {
-        if (t < 0 || t >= UNKNOWN_RULE)
-            t = UNKNOWN_RULE;
-        return rule_types[t];
-    }
-
-    static enum rule_type getruletype(const char* s) {
-        enum rule_type i;
-
-        for (i = 0; i < UNKNOWN_RULE; i++) {
-            if (rule_types[i] != NULL &&
-                strcmp(rule_types[i], s) == 0)
-                break;
-        }
-        return i;
-    }
-
 %}
 
 %defines
@@ -65,8 +38,10 @@
 
 %%
 
-rules:          rule { $$ = $1; $$->next = NULL; *rules_out = $$; }
-                | rules rule { $$ = $2; $$->next = $1; *rules_out = $$; }
+start:          rules { *rules_out = $1; }
+
+rules:          rule { $$ = $1; $$->next = NULL; }
+                | rules rule { $$ = $2; $$->next = $1; }
 
 rule:           KEYWORD WORD parameters ':' prerequisites {
     $$ = malloc(sizeof(struct rule));

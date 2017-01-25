@@ -1,0 +1,7 @@
+* Features
+
+  + Support encrypted devices
+  + Support LVM
+
+* Bugs
+  ‽

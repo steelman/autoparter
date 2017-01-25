@@ -1,3 +1,7 @@
 device sda path="/dev/sda" :
 
-label sdaLab type=gpt foo=bar: sda
+label sdaLab type=gpt: sda
+
+partition p1 size=512M type=Linux: sdaLab
+
+partition p2 size=8G type=Linux: sdaLab p1
