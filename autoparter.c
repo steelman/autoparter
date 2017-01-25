@@ -21,6 +21,7 @@
 #define _GNU_SOURCE
 #include <stdio.h>
 #include "parser.h"
+#include "autoparter.h"
 
 extern FILE *yyin;
 
@@ -31,6 +32,21 @@ struct device {
 };
 
 const struct rule *autoparter_rules;
+
+int device_check_rule(const struct rule *r)
+{
+    const struct parameter *p;
+    int path=0;
+
+    for(p = r->parameters; p != NULL; p = p->next) {
+        if (strcmp("path", p->name) == 0)
+            path = 1;
+        else
+            return 1;
+    }
+    return 0;
+}
+
 int main(int ac, char *argv[])
 {
 #if YYDEBUG
