@@ -30,13 +30,14 @@ struct device {
     void *requires;
 };
 
+const struct rule *autoparter_rules;
 int main(int ac, char *argv[])
 {
 #if YYDEBUG
     yydebug=1;
 #endif
     do {
-        yyparse();
+        yyparse(&autoparter_rules);
         printf("-----\n");
     } while (!feof(yyin));
     return 0;

@@ -32,6 +32,10 @@
 
 %}
 
+%defines
+%define lr.type ielr
+%parse-param {const struct rule **rules_out}
+
 %union {
     struct parameter *param;
     struct word *word;
@@ -43,8 +47,6 @@
 %type <param> parameter parameters
 %type <word> words prerequisites
 %type <rule> rule rules
-%defines
-%define lr.type ielr
 
 %printer { fprintf(yyoutput, "%p %s %p", $$, $$->w, $$->next); } WORD KEYWORD
 %printer { fprintf(yyoutput, "%p %s => %s %p",
@@ -63,8 +65,8 @@
 
 %%
 
-rules:          rule { $$ = $1; $$->next = NULL; }
-                | rules rule { $$ = $2; $$->next = $1; }
+rules:          rule { $$ = $1; $$->next = NULL; *rules_out = $$; }
+                | rules rule { $$ = $2; $$->next = $1; *rules_out = $$; }
 
 rule:           KEYWORD WORD parameters ':' prerequisites {
     $$ = malloc(sizeof(struct rule));
