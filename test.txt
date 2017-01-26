@@ -1,7 +1,9 @@
-device sda path="/dev/sda" :
+device TheDisk path="/dev/sda" :
+label partTable type=gpt : TheDisk
+partition p1 size=128MiB : partTable
+partition p2 size=90G : p1 partTable
+filesystem bootFs type=ext2 : p1
+filesystem rootFs type=ext4 : p2
+mount bootMnt target=/boot : bootFs rootMnt
+mount rootMnt target=/ foo=bar: rootFs
 
-label sdaLab type=gpt: sda
-
-partition p1 size=512M type=Linux: sdaLab
-
-partition p2 size=8G type=Linux: sdaLab p1

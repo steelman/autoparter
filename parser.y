@@ -41,7 +41,11 @@
 start:          rules { *rules_out = $1; }
 
 rules:          rule { $$ = $1; $$->next = NULL; }
-                | rules rule { $$ = $2; $$->next = $1; }
+                | rules rule {
+    if (lookup_rule($2->name, $1) != NULL)
+        {
+            
+    $$ = $2; $$->next = $1; }
 
 rule:           KEYWORD WORD parameters ':' prerequisites {
     $$ = malloc(sizeof(struct rule));

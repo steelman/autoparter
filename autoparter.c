@@ -53,6 +53,18 @@ int (*rule_check_functions[])(const struct rule*) = {
     [UNKNOWN_RULE] = NULL,
 };
 
+const struct rule *
+lookup_rule(const char* n, const struct rule* r)
+{
+    const struct rule* p;
+    for (p = r; p != NULL; p = p-> next)
+        {
+            if (strcmp(n, r->name) == 0)
+                return p;
+        }
+    return NULL;
+}
+
 const char *
 getrulename (enum rule_type t)
 {
@@ -74,13 +86,12 @@ getruletype (const char *s)
     return i;
 }
 
-int (*getrulecheck(enum rule_type t))(const struct rule*)
+int (*getrulecheck (enum rule_type t)) (const struct rule *)
 {
     if (t < 0 || t >= UNKNOWN_RULE)
-        t = UNKNOWN_RULE;
+	t = UNKNOWN_RULE;
     return rule_check_functions[t];
 }
-
 
 int
 device_check_rule (const struct rule *r)
@@ -102,49 +113,67 @@ int
 label_check_rule (const struct rule *r)
 {
     const struct parameter *p;
-    int type;
+    int ck_type;
     for (p = r->parameters; p != NULL; p = p->next)
         {
             if (strcmp ("type", p->name) == 0)
-                type = 1;
+                ck_type = 1;
             else if (strcmp ("clear", p->name) == 0)
                 ;
             else
                 return 0;
         }
-    return type;
+    return !!ck_type;
 }
 
 int
 partition_check_rule (const struct rule *r)
 {
     const struct parameter *p;
-    int type;
-    int size;
+    int ck_type;
+    int ck_size;
     for (p = r->parameters; p != NULL; p = p->next)
         {
             if (strcmp ("size", p->name) == 0)
-                size = 1;
+                ck_size = 1;
             else if (strcmp ("type", p->name) == 0)
-                type = 1;
+                ck_type = 1;
             else if (strcmp ("start", p->name) == 0)
                 ;
             else
                 return 0;
         }
-    return (type && size);
+    return (ck_type && ck_size);
 }
 
 int
 fs_check_rule (const struct rule *r)
 {
-    return 0;
+    const struct parameter *p;
+    int ck_type;
+    for (p = r->parameters; p != NULL; p = p->next)
+        {
+            if (strcmp ("type", p->name) == 0)
+                ck_type = 1;
+            else
+                return 0;
+        }
+    return !!ck_type;
 }
 
 int
 mount_check_rule (const struct rule *r)
 {
-    return 0;
+    const struct parameter *p;
+    int ck_target;
+    for (p = r->parameters; p != NULL; p = p->next)
+        {
+            if (strcmp ("target", p->name) == 0)
+                ck_target = 1;
+            else
+                return 0;
+        }
+    return !!ck_target;
 }
 
 void
