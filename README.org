@@ -1,0 +1,140 @@
+* Overview
+
+Autoparter is a non-interactive programme for partitioning hard drive
+during Debian installation. It is designed to precisely follow users'
+instructions to create reproducible partition layouts during preseeded
+installations.
+
+Autoparter is controlled with a set of rules describing different
+types of objects and dependencies between them. Autoparter checks if
+objects decribed by the rules exist, if not it creates them. It
+considers its work done whan all objects described by given rules
+exist. The format of a rule is somewhat simmilar to one used in
+makefiles.
+
+Every rule starts in a new line with a keyword determining the type of
+object. The following keywords are recognised:
+
+ + device - block device that can hold a filesystem or a partition table
+ + label - a partition table
+ + partition - a single partition
+ + filesystem - a file-system on a device or a partition
+ + mount - a mountpoint for a filesystem
+
+After a keyword, there is a name for an object. It is just a string
+that is used to refere to the objects from later rules that depend on it.
+
+Next, there is a number of parameters in the form name=value. The set
+of parameters depends on the object type it describes. A description
+is of an object ends with a colon.
+
+After a colon a list of prerequisites comes. These are objects
+(refered by their names) that need to exist before the current one can
+be created.
+
+This is a simple set of rules to make space for a new system to be
+installed.
+
+#+BEGIN_EXAMPLE
+device TheDisk path=/dev/sda :
+label partTable type=gpt : TheDisk
+partition p1 size=128MiB : partTable
+partition p2 size=90G : p1 partTable
+filesystem bootFs type=ext2 : p1
+filesystem rootFs type=ext4 : p2
+mount bootMnt target=/boot : bootFs rootMnt
+mount rootMnt target=/ : rootFs
+#+END_EXAMPLE
+
+* Rules
+
+** Formal description
+
+#+BEGIN_EXAMPLE
+   rules         = "" | rules, rule
+   rule          = KEYWORD, WORD, parameters, ":", prerequisites
+   parameters    = parameter | parameters, parameter
+   parameter     = WORD, "=", WORD
+   prerequisites = "" | prerequisites, WORD
+
+   KEYWORD = "device" | "label" | "partition" | "filesystem" | "mount"
+   WORD    = LETTER, {LETTER | DIGIT | SPECIAL CHARACTER}
+   LETTER  = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" |
+             "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" |
+             "S" | "T" | "U" | "V" | "W" | "X" | "Y" | "Z" | "a" |
+             "b" | "c" | "d" | "e" | "f" | "g" | "h" | "i" | "j" |
+             "k" | "l" | "m" | "n" | "o" | "p" | "q" | "r" | "s" |
+             "t" | "u" | "v" | "w" | "x" | "y" | "z"
+   DIGIT   = "0" | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9"
+   SPECIAL CHARACTER = "-" | "_" | "/"
+#+END_EXAMPLE
+
+** Keywords
+
+*** device
+    A device cannot be created. Autoparter can only check if a device
+    exists and use it to create a partition table or a filesystem.
+
+    Parameters:
+
+    + path - a path to a device node, e.g. /dev/sda
+
+    Prerequisites:
+
+    No prerequisistes required.
+
+*** label
+
+    Assure the existence of a partition table on a device.
+
+    Parameters:
+
+    + type - type of a partition table to create, eg. gpt, msdos
+    + clear - if "y", remove all existing partitions. Default: n.
+
+    Prerequisites:
+
+    One prerequisite is required, a reference to a device the partition
+    table will be on.
+
+*** partition
+
+    Parameters:
+
+    + size - desired size of a partition. The default units are
+      sectors. Keep in mind that different devices may have sectors of
+      different sizes.
+    + start - starting offset of a partition.
+    + index - index of the partition in the partition table. If
+      ommited, autoparter tries to figure it out or
+    + type - Optional.
+
+    Prerequisites:
+
+    The first prerequisist must be a partition table.
+
+*** filesystem
+
+    Parameters:
+
+    + type - type of filesystem to create, e.g. ext4, xfs etc.
+    + format - if set to "y", force running mkfs and creating new
+      file-system structures. Default: n.
+
+    Prerequisites:
+
+    The first prerequisist must be a partition or a device.
+
+*** mount
+
+    Parameters:
+
+    + target - directory to mount a filesystem. The path is going to
+      be prepended with a common prefix provided on a command line.
+      For Debian installer the default prefix is "/target".
+
+    Prerequisites:
+
+    The first prerequisist must be a file-system to mount. The rest
+    should be mounts higher in the hierarchy.
+
