@@ -17,6 +17,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef _AUTOPARTER_H_
+#define _AUTOPARTER_H_
+
+#include <uuid/uuid.h>
+
 enum rule_type {
     DEVICE = 0,
     LABEL,
@@ -51,6 +56,42 @@ struct rule
     void *data;
 };
 
+struct device_rule
+{
+    const char *name;
+    const char *path;
+    void *next;
+};
+
+struct label_rule
+{
+    char* name;
+    void* next;
+};
+
+struct partition_rule
+{
+    char* name;
+    void* next;
+};
+
+struct fs_rule
+{
+    const char *name;
+    const char *type;
+    const uuid_t uuid;
+    const int format;
+    void* next;
+};
+
+struct mount_rule
+{
+    const char* name;
+    const char* target;
+    const char* options;
+    void* next;
+};
+
 extern int autoparter_lineno;
 extern struct rule *autoparter_rules;
 extern const char *mount_prefix;
@@ -64,3 +105,4 @@ int partition_check_rule (const struct rule*);
 int fs_check_rule (const struct rule*);
 int mount_check_rule (const struct rule*);
 const struct rule *lookup_rule(const char*, const struct rule*);
+#endif /* _AUTOPARTER_H_ */

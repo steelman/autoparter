@@ -121,10 +121,22 @@ mount rootMnt target=/ : rootFs
     + type - type of filesystem to create, e.g. ext4, xfs etc.
     + format - if set to "y", force running mkfs and creating new
       file-system structures. Default: n.
+    + uuid - filesystem uinique id, as reported by blkid(1). Without
+
+    | CD format,preq → | 00 | 10 | 11 | 01 |
+    |     type, uuid ↓ |    |    |    |    |
+    |        A       B |    |    |    |    |
+    |------------------+----+----+----+----|
+    |               00 |  0 |  0 |  0 |  0 |
+    |               01 |  1 |  0 |  0 |  1 |
+    |               11 |  0 |  0 |  0 |  0 |
+    |               10 |  0 |  0 |  1 |  0 |
 
     Prerequisites:
 
-    The first prerequisist must be a partition or a device.
+    The first prerequisist MAY be a partition or a device. If no
+    prerequisites are given a uuid of an existing file-system MUST be
+    provided.
 
 *** mount
 
@@ -139,4 +151,3 @@ mount rootMnt target=/ : rootFs
 
     The first prerequisist must be a file-system to mount. The rest
     should be mounts higher in the hierarchy.
-

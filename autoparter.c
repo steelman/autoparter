@@ -27,13 +27,6 @@
 
 extern FILE *yyin;
 
-struct device
-{
-    const char *name;
-    const char *path;
-    void *requires;
-};
-
 struct rule *autoparter_rules;
 struct rule *sorted_rules = NULL;
 const char *mount_prefix;
@@ -47,6 +40,15 @@ static const char *rule_types[] = {
     [FILESYSTEM] = "filesystem",
     [MOUNT] = "mount",
     [UNKNOWN_RULE] = "UNKNOWN",
+};
+
+static const size_t rule_sizes[] = {
+    [DEVICE] = sizeof(struct device_rule),
+    [LABEL] = sizeof(struct label_rule),
+    [PARTITION] = sizeof(struct partition_rule),
+    [FILESYSTEM] = sizeof(struct fs_rule),
+    [MOUNT] = sizeof(struct mount_rule),
+    [UNKNOWN_RULE] = 0,
 };
 
 int (*rule_check_functions[])(const struct rule*) = {
@@ -174,18 +176,29 @@ fs_check_rule (const struct rule *r)
 {
     const struct parameter *p;
     int ck_type;
+    int ck_uuid;
+    int ck_format;
+
     for (p = r->parameters; p != NULL; p = p->next)
         {
             if (strcmp ("type", p->name) == 0)
                 ck_type = 1;
+            else if (strcmp ("uuid", p->name) == 0)
+                ck_uuid = 1;
+            else if (strcmp ("format", p->name) == 0 &&
+                     (p->value[0] == 'y' ||  p->value[0] == 'Y'))
+                ck_format = 1;
             else
                 return 0;
         }
-    return !!ck_type;
+    return ((!ck_type && ck_uuid && !ck_format) ||
+            (ck_type && !ck_uuid && ck_format && (r->prerequisites)));
 }
 
 int fs_ready_p (const struct rule *r)
 {
+    /* Try to find the FS by uuid */
+
     return 0;
 }
 
