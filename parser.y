@@ -1,5 +1,6 @@
 /* -*- mode: c -*- */
 %{
+#define _GNU_SOURCE
 #include "autoparter.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -7,7 +8,6 @@
 
 %defines
 %define lr.type ielr
-%parse-param {const struct rule **rules_out}
 
 %union {
     struct parameter *param;
@@ -38,14 +38,19 @@
 
 %%
 
-start:          rules { *rules_out = $1; }
+start:          rules { autoparter_rules = $1; }
 
 rules:          rule { $$ = $1; $$->next = NULL; }
                 | rules rule {
     if (lookup_rule($2->name, $1) != NULL)
         {
+            yyerror("duplicate rule name");
+            YYERROR;
+        }
             
-    $$ = $2; $$->next = $1; }
+    $$ = $2;
+    $$->next = $1;
+ }
 
 rule:           KEYWORD WORD parameters ':' prerequisites {
     $$ = malloc(sizeof(struct rule));
@@ -60,6 +65,8 @@ rule:           KEYWORD WORD parameters ':' prerequisites {
     $$->parameters = $3;
 
     $$->prerequisites = $5;
+    $$->tmark = 0;
+    $$->pmark = 0;
  }
 
 prerequisites:   %empty { $$ = NULL; }
@@ -85,5 +92,5 @@ extern FILE* yyin;
 
 yyerror (char const *s)
 {
-	fprintf (stderr, "%s\n", s);
+    fprintf (stderr, "%s\n", s);
 }

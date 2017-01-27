@@ -46,7 +46,15 @@ struct rule
     const struct parameter *parameters;
     const struct word *prerequisites;
     const struct rule *next;
+    int tmark;
+    int pmark;
+    void *data;
 };
+
+extern int autoparter_lineno;
+extern struct rule *autoparter_rules;
+extern const char *mount_prefix;
+extern const char* autoparter_file;
 
 const char *getrulename (enum rule_type);
 enum rule_type getruletype (const char *);
@@ -55,3 +63,4 @@ int label_check_rule (const struct rule*);
 int partition_check_rule (const struct rule*);
 int fs_check_rule (const struct rule*);
 int mount_check_rule (const struct rule*);
+const struct rule *lookup_rule(const char*, const struct rule*);

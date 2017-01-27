@@ -1,5 +1,6 @@
 /* -*- mode: c -*- */
 %{
+#define _GNU_SOURCE
 #include "autoparter.h"
 #include "parser.h"
 #if 0
@@ -42,6 +43,7 @@
 }
 
 =|:             { return yytext[0]; }
-.|\n            ;
+\n              { autoparter_lineno++; }
+.               ;
 
 %%

@@ -4,4 +4,4 @@
   + Support LVM
 
 * Bugs
-  ‽
+  + What bugs‽

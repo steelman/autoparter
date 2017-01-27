@@ -2,7 +2,7 @@
 /* Copyright (C) 2017 Łukasz Stelmach
  *
  * This file is part of autoparter.
- * 
+ *
  * Autoparter is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or (at
@@ -12,7 +12,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -20,6 +20,8 @@
 
 #define _GNU_SOURCE
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include "parser.h"
 #include "autoparter.h"
 
@@ -32,8 +34,11 @@ struct device
     void *requires;
 };
 
-const struct rule *autoparter_rules;
+struct rule *autoparter_rules;
+struct rule *sorted_rules = NULL;
 const char *mount_prefix;
+int autoparter_lineno;
+const char* autoparter_file = "stdin";
 
 static const char *rule_types[] = {
     [DEVICE] = "device",
@@ -59,7 +64,7 @@ lookup_rule(const char* n, const struct rule* r)
     const struct rule* p;
     for (p = r; p != NULL; p = p-> next)
         {
-            if (strcmp(n, r->name) == 0)
+            if (strcmp(n, p->name) == 0)
                 return p;
         }
     return NULL;
@@ -89,10 +94,11 @@ getruletype (const char *s)
 int (*getrulecheck (enum rule_type t)) (const struct rule *)
 {
     if (t < 0 || t >= UNKNOWN_RULE)
-	t = UNKNOWN_RULE;
+        t = UNKNOWN_RULE;
     return rule_check_functions[t];
 }
 
+/* ---------------------------------------------------------------- */
 int
 device_check_rule (const struct rule *r)
 {
@@ -109,6 +115,12 @@ device_check_rule (const struct rule *r)
     return path;
 }
 
+int device_ready_p (const struct rule *r)
+{
+    return 0;
+}
+
+/* ---------------------------------------------------------------- */
 int
 label_check_rule (const struct rule *r)
 {
@@ -126,6 +138,12 @@ label_check_rule (const struct rule *r)
     return !!ck_type;
 }
 
+int _ready_p (const struct rule *r)
+{
+    return 0;
+}
+
+/* ---------------------------------------------------------------- */
 int
 partition_check_rule (const struct rule *r)
 {
@@ -146,6 +164,11 @@ partition_check_rule (const struct rule *r)
     return (ck_type && ck_size);
 }
 
+int partition_ready_p (const struct rule *r)
+{
+    return 0;
+}
+/* ---------------------------------------------------------------- */
 int
 fs_check_rule (const struct rule *r)
 {
@@ -161,6 +184,12 @@ fs_check_rule (const struct rule *r)
     return !!ck_type;
 }
 
+int fs_ready_p (const struct rule *r)
+{
+    return 0;
+}
+
+/* ---------------------------------------------------------------- */
 int
 mount_check_rule (const struct rule *r)
 {
@@ -170,10 +199,75 @@ mount_check_rule (const struct rule *r)
         {
             if (strcmp ("target", p->name) == 0)
                 ck_target = 1;
+            else if (strcmp ("options", p->name) == 0)
+                ;
             else
                 return 0;
         }
     return !!ck_target;
+}
+
+int mount_ready_p (const struct rule *r)
+{
+    return 0;
+}
+
+/* ---------------------------------------------------------------- */
+void
+topo_visit (struct rule *n, struct rule ***last)
+{
+    if (n->tmark)
+        {
+            fprintf(stderr, "cyclic dependency detected for rule \"%s\"\n",
+                    n->name);
+            exit(1);
+        }
+
+    if (!n->pmark)
+        {
+            const struct word *w;
+            struct rule *t;
+            n->tmark = 1;
+            for (w = n->prerequisites; w != NULL; w = w->next)
+                {
+                    struct rule *m;
+                    if ((m = (struct rule*)lookup_rule(w->w, autoparter_rules)) == NULL)
+                        {
+                            fprintf(stderr, "prerequisite \"%s\""
+                                    " for rule \"%s\" not found\n",
+                                    w->w, n->name);
+                            exit(1);
+                        }
+                    topo_visit(m, last);
+                }
+            n->pmark = 1;
+            n->tmark = 0;
+
+            t = malloc(sizeof(struct rule));
+            t = memcpy(t, n, sizeof(struct rule));
+            t->next = NULL;
+
+            /* Add at the end of the list */
+            **last = t;
+            *last = (struct rule**)&(t->next);
+        }
+}
+
+void
+topo_sort (const struct rule *r, struct rule **s)
+{
+    struct rule *t;
+    struct rule **last = s;
+
+    for (t = (struct rule*)r;
+         t != NULL;
+         t = (struct rule*)t->next)
+        {
+            if (t->pmark)
+                continue;
+            topo_visit(t, &last);
+            t = (struct rule*)r;
+        }
 }
 
 void
@@ -189,14 +283,17 @@ main (int ac, char *argv[])
 #if YYDEBUG
     yydebug = 1;
 #endif
-    yyparse (&autoparter_rules);
+    autoparter_lineno = 1;
+    yyparse ();
+
+    topo_sort(autoparter_rules, &sorted_rules);
 
     printf("-----\n");
-    for (r = autoparter_rules; r != NULL; r = r->next)
+    for (r = sorted_rules; r != NULL; r = r->next)
         {
-            printf("checking… %s\n", (getrulecheck(r->type))(r) == 0 ? "ERROR" : "OK");
+            printf("checking… %s\n",
+                   (getrulecheck(r->type))(r) == 0 ? "ERROR" : "OK");
             dump_rule(r);
         }
-
     return 0;
 }

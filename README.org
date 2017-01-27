@@ -52,12 +52,13 @@ mount rootMnt target=/ : rootFs
 
 #+BEGIN_EXAMPLE
    rules         = "" | rules, rule
-   rule          = KEYWORD, WORD, parameters, ":", prerequisites
+   rule          = KEYWORD, ID, parameters, ":", prerequisites
    parameters    = parameter | parameters, parameter
-   parameter     = WORD, "=", WORD
-   prerequisites = "" | prerequisites, WORD
+   parameter     = ID, "=", WORD
+   prerequisites = "" | prerequisites, ID
 
    KEYWORD = "device" | "label" | "partition" | "filesystem" | "mount"
+   ID      = LETTER, {LETTER | DIGIT | SPECIAL CHARACTER}
    WORD    = LETTER | DIGIT | SPECIAL CHARACTER, {LETTER | DIGIT | SPECIAL CHARACTER}
    LETTER  = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H" | "I" |
              "J" | "K" | "L" | "M" | "N" | "O" | "P" | "Q" | "R" |
@@ -132,6 +133,7 @@ mount rootMnt target=/ : rootFs
     + target - directory to mount a filesystem. The path is going to
       be prepended with a common prefix provided on a command line.
       For Debian installer the default prefix is "/target".
+    + options - mount options
 
     Prerequisites:
 

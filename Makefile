@@ -7,6 +7,8 @@ SOURCES = autoparter.c \
 	scanner.c \
 	parser.c
 
+autoparter: scanner.o parser.o autoparter.o
+
 include $(SOURCES:.c=.d)
 
 .PRECIOUS: parser.c scanner.c
@@ -18,8 +20,6 @@ include $(SOURCES:.c=.d)
 	$(CC) -M $(CPPFLAGS) $< > $@
 
 scanner.d: parser.h
-
-autoparter: scanner.o parser.o autoparter.o
 
 clean:
 	rm -f $(SOURCES:.c=.d)
