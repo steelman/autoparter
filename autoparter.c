@@ -60,6 +60,15 @@ int (*rule_check_functions[])(const struct rule*) = {
     [UNKNOWN_RULE] = NULL,
 };
 
+int (*rule_ready_functions[])(const struct rule*) = {
+    [DEVICE] = device_ready_p,
+    [LABEL] = label_ready_p,
+    [PARTITION] = partition_ready_p,
+    [FILESYSTEM] = fs_ready_p,
+    [MOUNT] = mount_ready_p,
+    [UNKNOWN_RULE] = NULL,
+};
+
 const struct rule *
 lookup_rule(const char* n, const struct rule* r)
 {
@@ -100,6 +109,13 @@ int (*getrulecheck (enum rule_type t)) (const struct rule *)
     return rule_check_functions[t];
 }
 
+int (*getruleready (enum rule_type t)) (const struct rule *)
+{
+    if (t < 0 || t >= UNKNOWN_RULE)
+        t = UNKNOWN_RULE;
+    return rule_ready_functions[t];
+}
+
 /* ---------------------------------------------------------------- */
 int
 device_check_rule (const struct rule *r)
@@ -119,6 +135,7 @@ device_check_rule (const struct rule *r)
 
 int device_ready_p (const struct rule *r)
 {
+    if (
     return 0;
 }
 
@@ -140,7 +157,8 @@ label_check_rule (const struct rule *r)
     return !!ck_type;
 }
 
-int _ready_p (const struct rule *r)
+int
+label_ready_p (const struct rule *r)
 {
     return 0;
 }
@@ -166,7 +184,8 @@ partition_check_rule (const struct rule *r)
     return (ck_type && ck_size);
 }
 
-int partition_ready_p (const struct rule *r)
+int
+partition_ready_p (const struct rule *r)
 {
     return 0;
 }
@@ -195,10 +214,10 @@ fs_check_rule (const struct rule *r)
             (ck_type && !ck_uuid && ck_format && (r->prerequisites)));
 }
 
-int fs_ready_p (const struct rule *r)
+int
+fs_ready_p (const struct rule *r)
 {
     /* Try to find the FS by uuid */
-
     return 0;
 }
 
@@ -220,7 +239,8 @@ mount_check_rule (const struct rule *r)
     return !!ck_target;
 }
 
-int mount_ready_p (const struct rule *r)
+int
+mount_ready_p (const struct rule *r)
 {
     return 0;
 }
@@ -306,6 +326,13 @@ main (int ac, char *argv[])
         {
             printf("checking… %s\n",
                    (getrulecheck(r->type))(r) == 0 ? "ERROR" : "OK");
+
+            if (r->prerequisites == NULL)
+                {
+                    printf("no prerequisites, is the object ready? %s\n",
+                           (getruleready(r->type))(r) == 0 ? "NO" : "YES");
+                }
+
             dump_rule(r);
         }
     return 0;

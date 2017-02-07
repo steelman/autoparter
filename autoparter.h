@@ -99,10 +99,18 @@ extern const char* autoparter_file;
 
 const char *getrulename (enum rule_type);
 enum rule_type getruletype (const char *);
+
 int device_check_rule (const struct rule*);
 int label_check_rule (const struct rule*);
 int partition_check_rule (const struct rule*);
 int fs_check_rule (const struct rule*);
 int mount_check_rule (const struct rule*);
+
+int device_ready_p (const struct rule*);
+int label_ready_p (const struct rule*);
+int partition_ready_p (const struct rule*);
+int fs_ready_p (const struct rule*);
+int mount_ready_p (const struct rule*);
+
 const struct rule *lookup_rule(const char*, const struct rule*);
 #endif /* _AUTOPARTER_H_ */
